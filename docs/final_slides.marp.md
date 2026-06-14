@@ -74,7 +74,7 @@ style: |
 <div class="muted">
 Group: Tianze Lu · Ruoyu Wang · Feiyue Ye
 
-Student IDs: confirm before submission
+Student IDs: xxxxxxxxxx · xxxxxxxxxx · xxxxxxxxxx
 
 GitHub repository: https://github.com/Xiaoxiao-2002/TDLT2025-final-project.git
 </div>

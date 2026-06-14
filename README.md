@@ -79,19 +79,6 @@ Because nonlinear fitting may produce small numeric changes across reruns, the f
 - `figures/reproduce_2_mpl_fit_and_prediction.png`: Multi-Power Law reproduction.
 - `figures/tissue_residual_diagnostic.png`: early/late residual diagnostic for Tissue baseline vs progress-aware Tissue.
 
-## Final Submission Checklist
-
-- GitHub repository: https://github.com/Xiaoxiao-2002/TDLT2025-final-project.git
-- Confirm group member names and student IDs on the title slide.
-- Export `docs/final_slides.marp.md` to PDF before submission.
-- Submit the final slide deck by the course deadline.
-
-If Marp CLI is available, export with:
-
-```bash
-marp docs/final_slides.marp.md --pdf -o docs/final_slides.marp.pdf
-```
-
 ## Conclusion
 
 Cross-schedule loss prediction is feasible but schedule-sensitive. On the course-provided pkl data, the progress-aware Tissue variant is a simple and interpretable improvement over the plain Tissue baseline for the observed early-stage overprediction failure mode. Multi-Power Law remains an important reproduced baseline and contrast case, but it is less effective on this pkl setup than it was on the original sparse CSV curves.

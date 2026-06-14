@@ -69,7 +69,7 @@ The relevant slide assets are stored in `figures/`:
 - `reproduce_2_mpl_fit_and_prediction.png` for MPL.
 - `tissue_residual_diagnostic.png` for the failure mode.
 
-The companion outline is written in `docs/FINAL_SLIDES_OUTLINE.md`, and it is directly aligned with the final Marp deck in `docs/final_slides.marp.md`. The title slide includes the GitHub repository URL and still needs confirmed student IDs before submission.
+The companion outline is written in `docs/FINAL_SLIDES_OUTLINE.md`, and it is directly aligned with the final Marp deck in `docs/final_slides.marp.md`.
 
 ## 7. Conclusion
 
