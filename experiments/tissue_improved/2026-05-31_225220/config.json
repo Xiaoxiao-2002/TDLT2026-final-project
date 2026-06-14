@@ -1,0 +1,12 @@
+{
+  "baseline": "tissue_transient_correction",
+  "run_dir": "D:\\MyStudy\\博一下\\深度学习理论选讲\\final\\experiments\\tissue_improved\\2026-05-31_225220",
+  "train_schedule": "M:100M_gpt_D:20B_scheduler:cosine_rope",
+  "test_schedules": [
+    "M:100M_gpt_D:20B_scheduler:wsd_rope",
+    "M:100M_gpt_D:20B_scheduler:811_rope"
+  ],
+  "decay_factor": 0.999,
+  "figure_file": "D:\\MyStudy\\博一下\\深度学习理论选讲\\final\\figures\\scaling_law_fit_and_prediction.png",
+  "created_at": "2026-05-31 22:52:20"
+}

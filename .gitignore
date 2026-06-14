@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+
+.venv/
+.conda/
+env/
+venv/
+
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+
+# Rerunning scripts creates new timestamped experiment directories.
+# Keep the curated saved runs already committed, but review any new run before adding.

@@ -1,0 +1,14 @@
+{
+  "baseline": "multi_power_law",
+  "data_source": "loss curves/gpt_loss+lrs.pkl",
+  "sample_stride": 16,
+  "train_set": [
+    "cosine"
+  ],
+  "test_set": [
+    "wsd",
+    "811"
+  ],
+  "figure_file": "D:\\MyStudy\\博一下\\深度学习理论选讲\\final\\github_repo\\figures\\reproduce_2_mpl_fit_and_prediction.png",
+  "created_at": "2026-06-14 15:34:14"
+}

@@ -1,0 +1,16 @@
+{
+  "params": {
+    "L0": 2.6385588793031354,
+    "A": 1.1338705635357984,
+    "C": 0.1279262237240879,
+    "alpha": 0.690521812587728
+  },
+  "optimization": {
+    "success": true,
+    "status": 0,
+    "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+    "fun": 1.3717364952731224e-05,
+    "nfev": 115,
+    "nit": 18
+  }
+}

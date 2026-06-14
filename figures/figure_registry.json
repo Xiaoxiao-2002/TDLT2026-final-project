@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "updated_at": "2026-06-14 15:34:14",
+  "figures": [
+    {
+      "filename": "scaling_law_fit_and_prediction.png",
+      "sort_order": 10,
+      "description": "Three-panel stacked summary of the cosine fit and cross-schedule predictions.",
+      "data_setting": "Fit on M:100M_gpt_D:20B_scheduler:cosine_rope; predict on WSD and 8-1-1.",
+      "key_results": "Cosine Log-space R2 = 0.905891; WSD MAPE = 1.560%; 8-1-1 MAPE = 1.599%.",
+      "parameters": "L0 = 2.638559, A = 1.133871, C = 0.127926, alpha = 0.690522."
+    },
+    {
+      "filename": "tissue_residual_diagnostic.png",
+      "sort_order": 15,
+      "description": "2x2 residual comparison for early and late residual patterns across schedules.",
+      "data_setting": "Early/late residual comparison on Tissue baseline and the normalized-progress correction across cosine, WSD, and 8-1-1.",
+      "key_results": "The improved method lowers early-step residual magnitude and early MAE across schedules.",
+      "parameters": "Built from saved residuals.csv artifacts: tissue_baseline/2026-05-31_183420 and tissue_improved/2026-05-31_225220."
+    },
+    {
+      "filename": "reproduce_2_mpl_fit_and_prediction.png",
+      "sort_order": 20,
+      "description": "Standalone Multi-Power Law reproduction with 7 fitted parameters and cross-schedule prediction.",
+      "data_setting": "Train on cosine curve from the course pkl file; report WSD prediction and 8-1-1 extension.",
+      "key_results": "Train avg log-space R² = 0.824753; Test avg log-space R² = 0.805011; Cosine log-space R² = 0.824753; WSD log-space R² = 0.804552; 811 log-space R² = 0.805471.",
+      "parameters": "L0 = 2.150848, A = 1.369870, alpha = 0.259880, B = 150.002466, C = 1.505599, beta = 0.594647, gamma = 0.666948."
+    }
+  ],
+  "notes": [
+    "This script now fits the full 7-parameter Multi-Power Law model.",
+    "The script reads the course-provided gpt_loss+lrs.pkl file directly.",
+    "Dense pkl curves are sampled at a fixed stride to match the sparse-checkpoint setting used by the MPL reproduction.",
+    "The summary page is regenerated automatically from figure_registry.json."
+  ],
+  "latest_run": {
+    "Train avg log-space R²": "0.824753",
+    "Test avg log-space R²": "0.805011",
+    "Cosine log-space R²": "0.824753",
+    "WSD log-space R²": "0.804552",
+    "8-1-1 log-space R²": "0.805471"
+  },
+  "script_notes": [
+    "Source file: reproduce_2.py",
+    "Output image: reproduce_2_mpl_fit_and_prediction.png",
+    "Metadata source: figure_registry.json"
+  ]
+}
