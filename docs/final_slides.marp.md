@@ -76,7 +76,7 @@ Group: Tianze Lu · Ruoyu Wang · Feiyue Ye
 
 Student IDs: confirm before submission
 
-GitHub repository: TODO - create repository and paste URL before submission
+GitHub repository: https://github.com/Xiaoxiao-2002/TDLT2025-final-project.git
 </div>
 
 ---

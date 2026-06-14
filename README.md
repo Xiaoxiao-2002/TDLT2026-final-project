@@ -81,7 +81,7 @@ Because nonlinear fitting may produce small numeric changes across reruns, the f
 
 ## Final Submission Checklist
 
-- Create the GitHub repository and paste its URL into `docs/final_slides.marp.md`.
+- GitHub repository: https://github.com/Xiaoxiao-2002/TDLT2025-final-project.git
 - Confirm group member names and student IDs on the title slide.
 - Export `docs/final_slides.marp.md` to PDF before submission.
 - Submit the final slide deck by the course deadline.

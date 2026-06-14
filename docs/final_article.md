@@ -1,5 +1,9 @@
 # Task 2 Project Article: Predicting Loss Curve of LLM Pretraining
 
+**Authors:** Tianze Lu (`xxxxxxxxxx`), Ruoyu Wang (`xxxxxxxxxx`), Feiyue Ye (`xxxxxxxxxx`)
+
+**GitHub repository:** https://github.com/Xiaoxiao-2002/TDLT2025-final-project.git
+
 ## 1. Project Goal
 
 This project studies loss-curve prediction for LLM pretraining under different learning-rate schedules. The central motivation is practical: if a loss curve can be extrapolated from one schedule to another, then training runs can be analyzed and tuned with much less trial-and-error cost.
@@ -65,7 +69,7 @@ The relevant slide assets are stored in `figures/`:
 - `reproduce_2_mpl_fit_and_prediction.png` for MPL.
 - `tissue_residual_diagnostic.png` for the failure mode.
 
-The companion outline is written in `docs/FINAL_SLIDES_OUTLINE.md`, and it is directly aligned with the final Marp deck in `docs/final_slides.marp.md`. The title slide still needs the final GitHub repository URL and confirmed student IDs before submission.
+The companion outline is written in `docs/FINAL_SLIDES_OUTLINE.md`, and it is directly aligned with the final Marp deck in `docs/final_slides.marp.md`. The title slide includes the GitHub repository URL and still needs confirmed student IDs before submission.
 
 ## 7. Conclusion
 

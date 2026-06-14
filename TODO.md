@@ -11,7 +11,7 @@ This TODO tracks the remaining work needed to make the Task 2 final project subm
 - [x] Create a root `README.md` with project goal, setup, commands, results, and submission notes.
 - [x] Create a root `requirements.txt` for the scripts used in this project.
 - [x] Create this project-level TODO tracker.
-- [ ] Create the GitHub repository and replace the repository placeholder in `docs/final_slides.marp.md`.
+- [x] Create the GitHub repository and replace the repository placeholder in `docs/final_slides.marp.md`.
 - [ ] Confirm group member student IDs and add them to the title slide.
 - [ ] Export the final Marp slide deck to `docs/final_slides.marp.pdf` after the GitHub link and IDs are filled in.
 
