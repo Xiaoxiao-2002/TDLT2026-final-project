@@ -1,8 +1,8 @@
-# Task 2 Project Article: Predicting Loss Curve of LLM Pretraining
+﻿# Task 2 Project Article: Predicting Loss Curve of LLM Pretraining
 
 **Authors:** Tianze Lu (`xxxxxxxxxx`), Ruoyu Wang (`xxxxxxxxxx`), Feiyue Ye (`xxxxxxxxxx`)
 
-**GitHub repository:** https://github.com/Xiaoxiao-2002/TDLT2025-final-project.git
+**GitHub repository:** https://github.com/Xiaoxiao-2002/TDLT2026-final-project.git
 
 ## 1. Project Goal
 
@@ -69,7 +69,7 @@ The relevant slide assets are stored in `figures/`:
 - `reproduce_2_mpl_fit_and_prediction.png` for MPL.
 - `tissue_residual_diagnostic.png` for the failure mode.
 
-The companion outline is written in `docs/FINAL_SLIDES_OUTLINE.md`, and it is directly aligned with the final Marp deck in `docs/final_slides.marp.md`.
+The companion outline is written in `docs/FINAL_SLIDES_OUTLINE.md`, and it is directly aligned with the final slide deck in `docs/final_slides.md`.
 
 ## 7. Conclusion
 
@@ -81,3 +81,4 @@ For the final submission, the most defensible story is:
 - Present the progress-aware Tissue variant as our own method.
 - Use the residual diagnostic chart to explain why the improvement was chosen.
 - Keep the final slide narrative short, visual, and metric-driven.
+

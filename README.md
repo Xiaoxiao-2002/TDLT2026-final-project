@@ -20,7 +20,7 @@ We study whether a loss law fitted on a cosine learning-rate schedule can predic
 | `reproduce_2.py` | Multi-Power Law reproduction using the course-provided pkl loss curves. |
 | `experiments/` | Saved configs, fitted parameters, predictions, residuals, and metrics. |
 | `figures/` | Main figures used in the final slides. |
-| `docs/final_slides.marp.md` | Final Marp slide source. |
+| `docs/final_slides.md` | Final slide source. |
 | `docs/final_article.md` | Companion project article / narrative notes. |
 
 ## Data
