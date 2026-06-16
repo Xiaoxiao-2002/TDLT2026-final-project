@@ -1,0 +1,18 @@
+{
+  "params": {
+    "L0": 3.260227736595875,
+    "A": 1.2852405681870216,
+    "C": 0.21789137710043913,
+    "alpha": 0.652581044204662,
+    "D": 0.7600432946218058,
+    "tau": 0.2646767032223256
+  },
+  "optimization": {
+    "success": true,
+    "status": 0,
+    "message": "CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_<=_PGTOL",
+    "fun": 1.3128578906805636e-05,
+    "nfev": 147,
+    "nit": 15
+  }
+}

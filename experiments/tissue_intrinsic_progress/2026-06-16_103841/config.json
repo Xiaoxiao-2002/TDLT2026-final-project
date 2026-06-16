@@ -1,0 +1,13 @@
+{
+  "baseline": "tissue_intrinsic_progress_correction",
+  "run_dir": "D:\\MyStudy\\博一下\\深度学习理论选讲\\final\\github_repo\\experiments\\tissue_intrinsic_progress\\2026-06-16_103841",
+  "train_schedule": "M:100M_gpt_D:20B_scheduler:cosine_rope",
+  "test_schedules": [
+    "M:100M_gpt_D:20B_scheduler:wsd_rope",
+    "M:100M_gpt_D:20B_scheduler:811_rope"
+  ],
+  "decay_factor": 0.999,
+  "progress_feature": "normalized_intrinsic_progress_s1_over_total_s1",
+  "figure_file": "D:\\MyStudy\\博一下\\深度学习理论选讲\\final\\github_repo\\figures\\scaling_law_fit_and_prediction.png",
+  "created_at": "2026-06-16 10:38:41"
+}

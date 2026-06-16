@@ -1,0 +1,4 @@
+method,train_log_r2,wsd_mape,811_mape,run_dir
+Tissue baseline,0.905891,1.5601,1.5994,experiments/tissue_baseline/2026-05-31_183420
+Step progress,0.9129889092457804,1.4924088789123247,1.4925347793141042,experiments/tissue_improved/2026-05-31_225220
+Intrinsic progress,0.9146539927002334,1.5503903178727836,1.5766333205718697,experiments/tissue_intrinsic_progress/2026-06-16_103841

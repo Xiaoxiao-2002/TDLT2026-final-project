@@ -280,7 +280,7 @@ style: |
 
 # Predicting Loss Curves of LLM Pretraining
 
-## Cosine-to-WSD transfer with reproduced scaling-law baselines and a progress-aware correction
+## Cosine-to-WSD transfer with reproduced scaling-law baselines and two lightweight corrections
 
 <div class="title-meta">
 Group: Tianze Lu · Ruoyu Wang · Feiyue Ye<br>
@@ -290,7 +290,7 @@ Repository: https://github.com/Xiaoxiao-2002/TDLT2026-final-project.git
 
 <div class="hero-stat">
 <div class="num">1.492%</div>
-<div class="label">WSD MAPE after our progress-aware Tissue correction</div>
+<div class="label">best WSD MAPE after our step-progress Tissue correction</div>
 </div>
 
 ---
@@ -308,7 +308,7 @@ Repository: https://github.com/Xiaoxiao-2002/TDLT2026-final-project.git
 </div>
 <div class="panel accent">
 <h3>Method</h3>
-<p class="small">Propose a lightweight correction fitted on cosine and tested on WSD and 8-1-1.</p>
+<p class="small">Compare two lightweight Tissue corrections fitted on cosine and tested on WSD and 8-1-1.</p>
 </div>
 </div>
 
@@ -322,8 +322,8 @@ Repository: https://github.com/Xiaoxiao-2002/TDLT2026-final-project.git
 <div class="label">reproduced baselines: Tissue and MPL</div>
 </div>
 <div class="metric">
-<div class="value">1</div>
-<div class="label">interpretable progress-aware variant</div>
+<div class="value">2</div>
+<div class="label">interpretable Tissue correction variants</div>
 </div>
 </div>
 
@@ -344,7 +344,7 @@ Pretraining loss curves are often the earliest reliable signal of whether a run 
 <div class="panel dark">
 <h3>Central question</h3>
 <p>Can a loss law fitted only on a cosine schedule predict the loss curve under WSD?</p>
-<p class="small muted">The project is about cross-schedule transfer, not only curve fitting.</p>
+<p class="small muted">The project is about cross-schedule transfer, not only in-schedule curve fitting.</p>
 </div>
 </div>
 
@@ -397,7 +397,7 @@ Pretraining loss curves are often the earliest reliable signal of whether a run 
 </div>
 
 <div class="panel accent" style="margin-top: 22px;">
-<p class="small"><strong>Our design choice:</strong> keep Tissue's interpretability, then add the correction suggested by its residual pattern.</p>
+<p class="small"><strong>Our design choice:</strong> keep Tissue's interpretability, then test whether small residual corrections can improve schedule transfer.</p>
 </div>
 
 ---
@@ -502,7 +502,7 @@ $$
 
 ---
 
-## Our Method: Progress-Aware Tissue Correction
+## Method Development: Two Tissue Corrections
 
 <div class="formula">
 
@@ -514,17 +514,50 @@ $$
 
 <div class="grid-2">
 <div class="panel teal">
-<h3>What changes?</h3>
-<p class="small">Add a decaying correction term over normalized progress p(t), where p(t) ranges from 0 to 1.</p>
+<h3>Step-progress correction</h3>
+<p class="small">Use raw normalized progress: p(t)=t/T.</p>
+<p class="small">This directly targets the observed early transient bias and is strongest at the beginning.</p>
 </div>
 <div class="panel blue">
-<h3>Why this term?</h3>
-<p class="small">It is strongest early, then vanishes, matching the residual pattern found in the baseline.</p>
+<h3>Intrinsic-progress correction</h3>
+<p class="small">Use learning-rate area progress: p(t)=S1(t)/S1(T).</p>
+<p class="small">This is more schedule-aware and follows the intrinsic-time view that effective progress is accumulated step size.</p>
 </div>
 </div>
 
 <div class="panel accent" style="margin-top: 20px;">
-<p class="small"><strong>Contribution:</strong> a small, interpretable schedule-transfer correction instead of a large black-box residual model.</p>
+<p class="small"><strong>Design constraint:</strong> keep the same two added parameters D and τ, so the comparison isolates the progress variable rather than model capacity.</p>
+</div>
+
+---
+
+<!-- _class: figure-slide -->
+
+## Comparing the Two Corrections
+
+<div class="figure-center figure-1060">
+<img src="../figures/tissue_method_comparison.png" alt="Comparison of Tissue baseline, step-progress correction, and intrinsic-progress correction" />
+</div>
+
+<div class="caption">Intrinsic progress fits cosine slightly better, but step progress transfers better to WSD and 8-1-1.</div>
+
+---
+
+## Why Do They Behave Differently?
+
+<div class="grid-2">
+<div class="panel teal">
+<h3>Step progress wins on transfer</h3>
+<p class="small">The main failure mode is an early transient overprediction shared by cosine, WSD, and 8-1-1. A simple t/T decay acts like a schedule-agnostic early-bias correction.</p>
+</div>
+<div class="panel blue">
+<h3>Intrinsic progress wins on fit</h3>
+<p class="small">S1(t)/S1(T) better tracks effective optimization progress inside the cosine training curve, so it improves in-schedule R2.</p>
+</div>
+</div>
+
+<div class="panel accent" style="margin-top: 20px;">
+<p class="small"><strong>Interpretation:</strong> a theoretically cleaner progress variable can over-adapt to the training schedule when only one fitted curve is available. We therefore report step progress as the main method and intrinsic progress as an ablation.</p>
 </div>
 
 ---
@@ -536,7 +569,8 @@ $$
 | Method | Fit metric | Cross-schedule metric | Role |
 | --- | --- | --- | --- |
 | Tissue baseline | cosine log-space R² = 0.905891 | WSD MAPE = 1.5601%<br>8-1-1 MAPE = 1.5994% | reproduced baseline |
-| Tissue + progress correction | cosine log-space R² = 0.912989 | WSD MAPE = 1.4924%<br>8-1-1 MAPE = 1.4925% | our method |
+| Tissue + step-progress correction | cosine log-space R² = 0.912989 | WSD MAPE = 1.4924%<br>8-1-1 MAPE = 1.4925% | main method |
+| Tissue + intrinsic-progress correction | cosine log-space R² = 0.914654 | WSD MAPE = 1.5504%<br>8-1-1 MAPE = 1.5766% | ablation |
 | Multi-Power Law | train log-space R² = 0.824753 | test log-space R² = 0.805011 | reproduced contrast |
 
 </div>
@@ -552,7 +586,7 @@ $$
 </div>
 <div class="metric">
 <div class="value">simple</div>
-<div class="label">only two added parameters: D and τ</div>
+<div class="label">both corrections add only D and τ</div>
 </div>
 </div>
 
@@ -563,7 +597,7 @@ $$
 <div class="grid-2">
 <div class="panel blue">
 <h3>reproduce_1.py</h3>
-<p class="small">Tissue baseline, our progress-aware variant, residual analysis, and diagnostic figure.</p>
+<p class="small">Tissue baseline, step-progress correction, intrinsic-progress ablation, residual analysis, and comparison figure.</p>
 </div>
 <div class="panel teal">
 <h3>reproduce_2.py</h3>
@@ -578,7 +612,7 @@ $$
 </div>
 <div class="panel">
 <h3>figures/</h3>
-<p class="small">Main visual evidence used in the final slides and report.</p>
+<p class="small">Main visual evidence used in the final slides.</p>
 </div>
 </div>
 
@@ -602,7 +636,7 @@ $$
 </div>
 
 <div class="panel" style="margin-top: 24px;">
-<p>Source code, saved experiment artifacts, figures, report notes, and final slides are all included in the repository.</p>
+<p>Source code, saved experiment artifacts, figures, and final slides are included in the repository.</p>
 </div>
 
 ---
@@ -617,12 +651,13 @@ $$
 - Cross-schedule loss prediction is feasible, but schedule-sensitive.
 - Tissue is interpretable but misses the early-stage loss drop.
 - MPL is a useful reproduced contrast baseline.
-- Our progress-aware Tissue variant directly targets the observed failure mode.
+- Step-progress correction gives the best transfer result.
+- Intrinsic-progress correction gives a cleaner theory-motivated ablation but weaker transfer.
 
 </div>
 <div class="panel dark">
 <h3>Final takeaway</h3>
-<p>Residual diagnosis can guide small, interpretable improvements to scaling-law transfer.</p>
-<p class="small">Next: stronger schedule encoding, phase-wise fitting, or regularized residual modeling.</p>
+<p>Residual diagnosis can guide small, interpretable improvements, but transfer metrics should decide the final method.</p>
+<p class="small">Next: fit multiple schedules or regularize schedule-aware residual terms to avoid over-adapting to cosine.</p>
 </div>
 </div>

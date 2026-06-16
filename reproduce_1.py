@@ -204,24 +204,21 @@ def build_prediction_frame(split_name, schedule_name, step, actual, predicted, l
 
 def save_experiment_artifacts(run_dir, params, result, train_bundle, test_bundles, artifacts):
     method_name = artifacts.get('method_name', 'tissue_scaling_law')
+    param_names = artifacts.get('param_names', ['L0', 'A', 'C', 'alpha'])
     config = {
         'baseline': method_name,
         'run_dir': run_dir,
         'train_schedule': train_bundle['schedule_name'],
         'test_schedules': [bundle['schedule_name'] for bundle in test_bundles],
         'decay_factor': artifacts['decay_factor'],
+        'progress_feature': artifacts.get('progress_feature'),
         'figure_file': artifacts['figure_file'],
         'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
     }
     save_json(os.path.join(run_dir, 'config.json'), config)
 
     fit_params = {
-        'params': {
-            'L0': float(params[0]),
-            'A': float(params[1]),
-            'C': float(params[2]),
-            'alpha': float(params[3]),
-        },
+        'params': {name: float(value) for name, value in zip(param_names, params)},
         'optimization': {
             'success': bool(result.success),
             'status': int(result.status),
@@ -369,6 +366,79 @@ def generate_residual_diagnostic_figure(baseline_residuals_path, improved_residu
     write_results_summary(os.path.dirname(output_path), registry)
     return output_path
 
+
+def generate_method_comparison_figure(comparison_frame, output_filename='tissue_method_comparison.png'):
+    """Plot metric comparison across Tissue variants."""
+    output_path = make_plot_output_path(output_filename)
+    methods = comparison_frame['method'].tolist()
+    x = np.arange(len(methods))
+    width = 0.34
+
+    fig, axes = plt.subplots(1, 2, figsize=(13.5, 5.2))
+
+    axes[0].bar(x, comparison_frame['train_log_r2'], color=['#6b7280', '#2563eb', '#0f766e'])
+    axes[0].set_title('Cosine Fit')
+    axes[0].set_ylabel('Log-space R2')
+    axes[0].set_xticks(x)
+    axes[0].set_xticklabels(methods, rotation=15, ha='right')
+    axes[0].grid(axis='y', alpha=0.25)
+
+    axes[1].bar(x - width / 2, comparison_frame['wsd_mape'], width, label='WSD', color='#2563eb')
+    axes[1].bar(x + width / 2, comparison_frame['811_mape'], width, label='8-1-1', color='#0f766e')
+    axes[1].set_title('Cross-Schedule Transfer')
+    axes[1].set_ylabel('MAPE (%)')
+    axes[1].set_xticks(x)
+    axes[1].set_xticklabels(methods, rotation=15, ha='right')
+    axes[1].legend()
+    axes[1].grid(axis='y', alpha=0.25)
+
+    for axis in axes:
+        for container in axis.containers:
+            axis.bar_label(container, fmt='%.4g', fontsize=10, padding=3)
+
+    fig.suptitle('Tissue Method Comparison', fontsize=18)
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=180, bbox_inches='tight')
+    plt.close(fig)
+
+    registry = load_figure_registry()
+    registry = upsert_figure_entry(registry, {
+        "filename": output_filename,
+        "sort_order": 30,
+        "description": "Side-by-side comparison of the Tissue baseline and two lightweight correction variants.",
+        "data_setting": "All methods fit on cosine and transfer to WSD and 8-1-1 using the same course pkl curves.",
+        "key_results": "Compares train log-space R2 and cross-schedule MAPE for baseline, normalized-progress, and intrinsic-progress Tissue.",
+        "parameters": "Generated from the latest reproduce_1.py run artifacts.",
+    })
+    write_figure_registry(registry)
+    write_results_summary(os.path.dirname(output_path), registry)
+    return output_path
+
+
+def save_method_comparison(rows):
+    """Save a compact comparison table for the Tissue variants."""
+    run_dir = make_run_dir('tissue_method_comparison')
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    normalized_rows = []
+    for row in rows:
+        normalized_row = dict(row)
+        if 'run_dir' in normalized_row:
+            normalized_row['run_dir'] = os.path.relpath(normalized_row['run_dir'], script_dir).replace(os.sep, '/')
+        normalized_rows.append(normalized_row)
+
+    comparison_frame = pd.DataFrame(normalized_rows)
+    csv_path = os.path.join(run_dir, 'comparison.csv')
+    json_path = os.path.join(run_dir, 'comparison.json')
+    save_csv(csv_path, comparison_frame)
+    save_json(json_path, {'methods': normalized_rows})
+    figure_path = generate_method_comparison_figure(comparison_frame)
+    return {
+        'run_dir': run_dir,
+        'csv': csv_path,
+        'json': json_path,
+        'figure': figure_path,
+    }
+
 def compute_scaling_law_features(lr_schedule, decay_factor=0.999):
     """
     Compute S1 (forward area) and S2 (annealing area) for a given learning rate schedule.
@@ -508,6 +578,16 @@ def improved_scaling_law_loss(S1, S2, progress, params):
     return L0 + A * np.power(safe_S1, -alpha) - C * S2 - early_correction
 
 
+def normalized_step_progress(length):
+    return np.linspace(0.0, 1.0, length, endpoint=True)
+
+
+def normalized_intrinsic_progress(S1):
+    """Use cumulative learning-rate area as schedule-aware training progress."""
+    total_area = max(float(S1[-1]), 1e-12)
+    return np.clip(S1 / total_area, 0.0, 1.0)
+
+
 def fit_improved_scaling_law(S1_data, S2_data, progress_data, loss_data, initial_params=None):
     """Fit a slightly richer model with an early transient correction term."""
     if initial_params is None:
@@ -544,7 +624,14 @@ def fit_improved_scaling_law(S1_data, S2_data, progress_data, loss_data, initial
 
 def predict_improved_loss_curve(lr_schedule, fitted_params, decay_factor=0.999):
     S1, S2, _ = compute_scaling_law_features(lr_schedule, decay_factor)
-    progress = np.linspace(0.0, 1.0, len(lr_schedule), endpoint=True)
+    progress = normalized_step_progress(len(lr_schedule))
+    predicted_losses = improved_scaling_law_loss(S1, S2, progress, fitted_params)
+    return predicted_losses, S1, S2, progress
+
+
+def predict_intrinsic_progress_loss_curve(lr_schedule, fitted_params, decay_factor=0.999):
+    S1, S2, _ = compute_scaling_law_features(lr_schedule, decay_factor)
+    progress = normalized_intrinsic_progress(S1)
     predicted_losses = improved_scaling_law_loss(S1, S2, progress, fitted_params)
     return predicted_losses, S1, S2, progress
 
@@ -879,12 +966,13 @@ def example_workflow():
             'wsd_metrics': {'mape': wsd_mape},
             '811_metrics': {'mape': mape_811},
             'method_name': 'tissue_scaling_law',
+            'param_names': ['L0', 'A', 'C', 'alpha'],
         },
     )
 
     # Fit a lightweight improved variant with an early-stage transient correction.
     print(f"\n=== Fitting Improved Tissue Variant ===")
-    progress_cosine = np.linspace(0.0, 1.0, len(actual_losses_cosine), endpoint=True)
+    progress_cosine = normalized_step_progress(len(actual_losses_cosine))
     params_improved, result_improved = fit_improved_scaling_law(S1_cosine, S2_cosine, progress_cosine, actual_losses_cosine)
     L0_i, A_i, C_i, alpha_i, D_i, tau_i = params_improved
     print(f"  L0 = {L0_i:.4f}")
@@ -983,12 +1071,174 @@ def example_workflow():
             'wsd_metrics': {'mape': wsd_error_improved},
             '811_metrics': {'mape': mape_811_improved},
             'method_name': 'tissue_transient_correction',
+            'param_names': ['L0', 'A', 'C', 'alpha', 'D', 'tau'],
+            'progress_feature': 'normalized_step_progress',
         },
     )
+
+    # Fit an additional schedule-aware variant using intrinsic progress S1(t) / S1(T).
+    print(f"\n=== Fitting Intrinsic-Progress Tissue Variant ===")
+    intrinsic_progress_cosine = normalized_intrinsic_progress(S1_cosine)
+    params_intrinsic, result_intrinsic = fit_improved_scaling_law(
+        S1_cosine,
+        S2_cosine,
+        intrinsic_progress_cosine,
+        actual_losses_cosine,
+    )
+    L0_s, A_s, C_s, alpha_s, D_s, tau_s = params_intrinsic
+    print(f"  L0 = {L0_s:.4f}")
+    print(f"  A  = {A_s:.4f}")
+    print(f"  C  = {C_s:.4f}")
+    print(f"  alpha = {alpha_s:.4f}")
+    print(f"  D  = {D_s:.4f}")
+    print(f"  tau = {tau_s:.4f}")
+
+    pred_train_intrinsic = improved_scaling_law_loss(
+        S1_cosine,
+        S2_cosine,
+        intrinsic_progress_cosine,
+        params_intrinsic,
+    )
+    pred_train_intrinsic_clipped = np.maximum(pred_train_intrinsic, eps)
+    ss_res_log_intrinsic = np.sum((np.log(actual_clipped) - np.log(pred_train_intrinsic_clipped))**2)
+    r2_log_intrinsic = 1 - ss_res_log_intrinsic / ss_tot_log
+    print(f"  Intrinsic-progress Log-space R2 = {r2_log_intrinsic:.6f}")
+
+    predicted_wsd_intrinsic, S1_wsd_intrinsic, S2_wsd_intrinsic, progress_wsd_intrinsic = predict_intrinsic_progress_loss_curve(
+        lr_schedule_wsd,
+        params_intrinsic,
+        decay_factor=0.999,
+    )
+    wsd_error_intrinsic = np.mean(np.abs(predicted_wsd_intrinsic - actual_losses_wsd) / actual_losses_wsd) * 100
+
+    predicted_811_intrinsic, S1_811_intrinsic, S2_811_intrinsic, progress_811_intrinsic = predict_intrinsic_progress_loss_curve(
+        lr_schedule_811,
+        params_intrinsic,
+        decay_factor=0.999,
+    )
+    mape_811_intrinsic = np.mean(np.abs(predicted_811_intrinsic - actual_losses_811) / np.maximum(actual_losses_811, 1e-12)) * 100
+
+    intrinsic_train_frame = build_prediction_frame(
+        'train',
+        schedule_for_fitting,
+        steps_cosine,
+        actual_losses_cosine,
+        pred_train_intrinsic,
+        lr_schedule_cosine,
+        S1_cosine,
+        S2_cosine,
+    )
+    intrinsic_wsd_frame = build_prediction_frame(
+        'test',
+        'M:100M_gpt_D:20B_scheduler:wsd_rope',
+        steps_wsd,
+        actual_losses_wsd,
+        predicted_wsd_intrinsic,
+        lr_schedule_wsd,
+        S1_wsd_intrinsic,
+        S2_wsd_intrinsic,
+    )
+    intrinsic_811_frame = build_prediction_frame(
+        'test',
+        'M:100M_gpt_D:20B_scheduler:811_rope',
+        steps_811,
+        actual_losses_811,
+        predicted_811_intrinsic,
+        lr_schedule_811,
+        S1_811_intrinsic,
+        S2_811_intrinsic,
+    )
+    run_dir_intrinsic = make_run_dir('tissue_intrinsic_progress')
+    artifact_paths_intrinsic = save_experiment_artifacts(
+        run_dir_intrinsic,
+        params_intrinsic,
+        result_intrinsic,
+        {
+            'schedule_name': schedule_for_fitting,
+            'frame': intrinsic_train_frame,
+            'curve_frame': pd.DataFrame({
+                'step': steps_cosine,
+                'loss': actual_losses_cosine,
+                'lr': lr_schedule_cosine,
+                's1': S1_cosine,
+                's2': S2_cosine,
+                'intrinsic_progress': intrinsic_progress_cosine,
+            }),
+        },
+        [
+            {
+                'schedule_name': 'M:100M_gpt_D:20B_scheduler:wsd_rope',
+                'frame': intrinsic_wsd_frame,
+                'curve_frame': pd.DataFrame({
+                    'step': steps_wsd,
+                    'loss': actual_losses_wsd,
+                    'lr': lr_schedule_wsd,
+                    's1': S1_wsd_intrinsic,
+                    's2': S2_wsd_intrinsic,
+                    'intrinsic_progress': progress_wsd_intrinsic,
+                }),
+            },
+            {
+                'schedule_name': 'M:100M_gpt_D:20B_scheduler:811_rope',
+                'frame': intrinsic_811_frame,
+                'curve_frame': pd.DataFrame({
+                    'step': steps_811,
+                    'loss': actual_losses_811,
+                    'lr': lr_schedule_811,
+                    's1': S1_811_intrinsic,
+                    's2': S2_811_intrinsic,
+                    'intrinsic_progress': progress_811_intrinsic,
+                }),
+            },
+        ],
+        {
+            'decay_factor': 0.999,
+            'figure_file': output_path,
+            'train_metrics': {'log_r2': r2_log_intrinsic},
+            'wsd_metrics': {'mape': wsd_error_intrinsic},
+            '811_metrics': {'mape': mape_811_intrinsic},
+            'method_name': 'tissue_intrinsic_progress_correction',
+            'param_names': ['L0', 'A', 'C', 'alpha', 'D', 'tau'],
+            'progress_feature': 'normalized_intrinsic_progress_s1_over_total_s1',
+        },
+    )
+
+    comparison_paths = save_method_comparison([
+        {
+            'method': 'Tissue baseline',
+            'train_log_r2': r2_log,
+            'wsd_mape': wsd_mape,
+            '811_mape': mape_811,
+            'run_dir': run_dir,
+        },
+        {
+            'method': 'Step progress',
+            'train_log_r2': r2_log_improved,
+            'wsd_mape': wsd_error_improved,
+            '811_mape': mape_811_improved,
+            'run_dir': run_dir_improved,
+        },
+        {
+            'method': 'Intrinsic progress',
+            'train_log_r2': r2_log_intrinsic,
+            'wsd_mape': wsd_error_intrinsic,
+            '811_mape': mape_811_intrinsic,
+            'run_dir': run_dir_intrinsic,
+        },
+    ])
     diagnostic_path = generate_residual_diagnostic_figure(
         artifact_paths['residuals'],
         artifact_paths_improved['residuals'],
     )
+    print(f"Saved baseline run artifacts to '{run_dir}'")
+    print(f"Saved step-progress run artifacts to '{run_dir_improved}'")
+    print(f"Step-progress WSD Prediction Error: {wsd_error_improved:.3f}%")
+    print(f"Step-progress 8-1-1 Prediction Error: {mape_811_improved:.3f}%")
+    print(f"Saved intrinsic-progress run artifacts to '{run_dir_intrinsic}'")
+    print(f"Intrinsic-progress WSD Prediction Error: {wsd_error_intrinsic:.3f}%")
+    print(f"Intrinsic-progress 8-1-1 Prediction Error: {mape_811_intrinsic:.3f}%")
+    print(f"Saved method comparison to '{comparison_paths['run_dir']}'")
+    print(f"Method comparison figure saved to '{comparison_paths['figure']}'")
     print(f"✓ Improved run artifacts saved to '{run_dir_improved}'")
     print(f"✓ Improved WSD Prediction Error: {wsd_error_improved:.3f}%")
     print(f"✓ Improved 8-1-1 Prediction Error: {mape_811_improved:.3f}%")

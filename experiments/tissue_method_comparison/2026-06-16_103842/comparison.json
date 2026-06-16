@@ -1,0 +1,25 @@
+{
+  "methods": [
+    {
+      "method": "Tissue baseline",
+      "train_log_r2": 0.905891,
+      "wsd_mape": 1.5601,
+      "811_mape": 1.5994,
+      "run_dir": "experiments/tissue_baseline/2026-05-31_183420"
+    },
+    {
+      "method": "Step progress",
+      "train_log_r2": 0.9129889092457804,
+      "wsd_mape": 1.4924088789123247,
+      "811_mape": 1.4925347793141042,
+      "run_dir": "experiments/tissue_improved/2026-05-31_225220"
+    },
+    {
+      "method": "Intrinsic progress",
+      "train_log_r2": 0.9146539927002334,
+      "wsd_mape": 1.5503903178727836,
+      "811_mape": 1.5766333205718697,
+      "run_dir": "experiments/tissue_intrinsic_progress/2026-06-16_103841"
+    }
+  ]
+}
